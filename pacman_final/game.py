@@ -46,7 +46,6 @@ class GamePlay(object):
                 self.player.difference_x = 0
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_d:
-
                     self.player.move_right()
                 elif event.key == pygame.K_a:
                     self.player.move_left()

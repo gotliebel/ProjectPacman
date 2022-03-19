@@ -22,7 +22,7 @@ def main():
     game = GamePlay()
     menu = Menu(True, False)
     menu.append_option('Start', lambda run: not run)
-    menu.append_option('Quit', lambda run, game_over: (not game_over, not run))
+    menu.append_option('Quit', lambda run, game_over: (not run, not game_over))
     while menu.run:
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
