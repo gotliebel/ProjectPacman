@@ -19,7 +19,6 @@ class Animation(object):
             for y in range(0, self.sprite_image.get_height(), height):
                 image = pygame.Surface([width, height])
                 image.blit(self.sprite_image, (0, 0), (x, y, width, height))
-                image.set_colorkey((0, 0, 0))
                 self.image_list.append(image)
 
     def update(self, width, height):
