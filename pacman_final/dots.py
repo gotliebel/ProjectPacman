@@ -64,7 +64,7 @@ for i in range(28, 280, WIDTH // 40):
     dots_array.append(Dot(10, 10, 28, i, LIGHTBLUE))
 for i in range(612, 870, WIDTH // 40):
     dots_array.append(Dot(10, 10, 28, i, LIGHTBLUE))
-for i in range(28, HEIGHT, WIDTH // 40):
+for i in range(28, HEIGHT - 20, WIDTH // 40):
     dots_array.append(Dot(10, 10, 168, i, LIGHTBLUE))
 for i in range(28, 148, WIDTH // 40):
     dots_array.append((Dot(10, 10, 408, i, LIGHTBLUE)))
@@ -74,7 +74,7 @@ for i in range(772, 900, WIDTH // 40):
     dots_array.append((Dot(10, 10, 408, i, LIGHTBLUE)))
 for i in range(772, 900, WIDTH // 40):
     dots_array.append((Dot(10, 10, 672, i, LIGHTBLUE)))
-for i in range(28, HEIGHT, WIDTH // 40):
+for i in range(28, HEIGHT - 20, WIDTH // 40):
     dots_array.append(Dot(10, 10, 912, i, LIGHTBLUE))
 for i in range(28, 280, WIDTH // 40):
     dots_array.append(Dot(10, 10, 1052, i, LIGHTBLUE))

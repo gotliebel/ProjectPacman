@@ -1,3 +1,5 @@
+import time
+
 from animation import Animation
 from environment import *
 import random
@@ -134,6 +136,7 @@ class Enemies(AbstractCreatures):
     def __init__(self, image, move_x, move_y, x, y):
         AbstractCreatures.__init__(self, image)
         self.end_game = False
+        self.change_dir_time = time.perf_counter()
         self.difference_y = move_y
         self.difference_x = move_x
         self.image = self.const_image
@@ -191,30 +194,28 @@ class Enemies(AbstractCreatures):
     def change_direction(self):
         if not self.possible_directions:
             self.direction = 'up'
-        elif self.direction not in self.possible_directions:
+        elif time.perf_counter() - self.change_dir_time > 0.1 or (self.direction not in self.possible_directions):
             if self.direction == 'right':
                 if 'left' in self.possible_directions:
                     self.possible_directions.remove('left')
-                self.direction = random.choice(self.possible_directions)
             elif self.direction == 'left':
                 if 'right' in self.possible_directions:
                     self.possible_directions.remove('right')
-                self.direction = random.choice(self.possible_directions)
             elif self.direction == 'up':
                 if 'down' in self.possible_directions:
                     self.possible_directions.remove('down')
-                self.direction = random.choice(self.possible_directions)
             elif self.direction == 'down':
                 if 'up' in self.possible_directions:
                     self.possible_directions.remove('up')
-                self.direction = random.choice(self.possible_directions)
+            self.direction = random.choice(self.possible_directions)
+            self.change_dir_time = time.perf_counter()
 
     def distance_to_pacman_change_speed(self, *args):
         for player in args:
             distance_to_player = math.sqrt((self.rect.center[0] - player.rect.center[0]) ** 2 + (self.rect.center[1] - player.rect.center[1]) ** 2)
             if distance_to_player < 128:
-                self.difference_x *= 1.2
-                self.difference_y *= 1.2
+                self.difference_x *= 1.5
+                self.difference_y *= 1.5
 
     def move_right(self):
         self.image = self.const_image

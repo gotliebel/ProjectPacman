@@ -51,8 +51,7 @@ class GamePlayFirstLevel(object):
             if player.lives == 3 or time.perf_counter() - player.hit_time >= 1:
                 player.lives -= 1
                 player.hit_time = time.perf_counter()
-        if hits_block:
-            player.score += 1
+        player.score += len(hits_block)
         if not self.dots:
             self.win = True
         if pygame.sprite.spritecollideany(player, self.environment):
