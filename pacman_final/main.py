@@ -44,6 +44,7 @@ def main():
     if menu.run_first_level:
         game = GamePlayFirstLevel(screen, game_over)
         while not game.game_over:
+            
             events = pygame.event.get()
             clock.tick(FPS)
             game.logic(game.player)
