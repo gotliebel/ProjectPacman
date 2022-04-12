@@ -31,7 +31,7 @@ class GamePlayFirstLevel(object):
 
     def make_enemies(self):
         for i in range(8):
-            self.enemies_group.add(Enemies('slime.png', 0, 0, WIDTH // 2, HEIGHT // 2))
+            self.enemies_group.add(Enemies('slime.png', WIDTH // 2, HEIGHT // 2))
 
     def events(self, events):
         for event in events:

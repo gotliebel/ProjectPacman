@@ -98,22 +98,22 @@ class Player(AbstractCreatures):
     def move_right(self):
         self.moment_image = self.const_image
         self.difference_y = 0
-        self.difference_x = 3
+        self.difference_x = 4
 
     def move_left(self):
         self.moment_image = pygame.transform.rotate(self.const_image, 180)
         self.difference_y = 0
-        self.difference_x = -3
+        self.difference_x = -4
 
     def move_up(self):
         self.moment_image = pygame.transform.rotate(self.const_image, 90)
         self.difference_x = 0
-        self.difference_y = -3
+        self.difference_y = -4
 
     def move_down(self):
         self.moment_image = pygame.transform.rotate(self.const_image, 270)
         self.difference_x = 0
-        self.difference_y = 3
+        self.difference_y = 4
 
     def stop_move_right(self):
         self.moment_image = self.const_image
@@ -133,28 +133,22 @@ class Player(AbstractCreatures):
 
 
 class Enemies(AbstractCreatures):
-    def __init__(self, image, move_x, move_y, x, y):
+    def __init__(self, image, x, y):
         AbstractCreatures.__init__(self, image)
         self.end_game = False
         self.change_dir_time = time.perf_counter()
-        self.difference_y = move_y
-        self.difference_x = move_x
+        self.difference_y = 0
+        self.difference_x = 0
         self.image = self.const_image
         self.image.set_colorkey((0, 0, 0))
-        if move_x >= 0 and move_y == 0:
-            self.direction = 'right'
-        if move_x < 0 and move_y == 0:
-            self.direction = 'left'
-        if move_y >= 0 and move_x == 0:
-            self.direction = 'down'
-        if move_y < 0 and move_x == 0:
-            self.direction = 'up'
+        self.direction = ''
         self.possible_directions = ['right', 'left', 'up', 'down']
         self.rect.center = (x, y)
 
     def update(self, *args):
         self.make_directions()
         self.change_direction()
+        self.follow_packman(*args)
         if self.rect.left > WIDTH:
             self.rect.right = 0
         elif self.rect.right < 0:
@@ -179,6 +173,9 @@ class Enemies(AbstractCreatures):
         self.rect.x += self.difference_x
         self.rect.y += self.difference_y
 
+    def distance_to_player(self, player):
+        return math.sqrt((self.rect.center[0] - player.rect.center[0]) ** 2 + (self.rect.center[1] - player.rect.center[1]) ** 2)
+
     def make_directions(self):
         self.possible_directions = ['right', 'left', 'up', 'down']
         for block in environment_blocks:
@@ -190,29 +187,51 @@ class Enemies(AbstractCreatures):
                 self.possible_directions.remove('up')
             if (block.check_point((self.rect.bottomleft[0], self.rect.bottomleft[1] + 7)) or block.check_point((self.rect.bottomright[0], self.rect.bottomright[1] + 7))) and 'down' in self.possible_directions:
                 self.possible_directions.remove('down')
+        if self.direction == 'right' and 'left' in self.possible_directions:
+            self.possible_directions.remove('left')
+        elif self.direction == 'left' and 'right' in self.possible_directions:
+            self.possible_directions.remove('right')
+        elif self.direction == 'up' and 'down' in self.possible_directions:
+            self.possible_directions.remove('down')
+        elif self.direction == 'down' and 'up' in self.possible_directions:
+            self.possible_directions.remove('up')
+
+    def follow_packman(self, *args):
+        min_distance = self.distance_to_player(args[0])
+        min_distance_player = args[0]
+        for player in args:
+            moment_distance = self.distance_to_player(player)
+            if self.distance_to_player(player) < min_distance:
+                min_distance = moment_distance
+                min_distance_player = player
+        if min_distance < 128:
+            self.rect.x += 2
+            if self.distance_to_player(min_distance_player) < min_distance and 'right' in self.possible_directions:
+                self.direction = 'right'
+            self.rect.x -= 2
+            self.rect.x -= 2
+            if self.distance_to_player(min_distance_player) < min_distance and 'left' in self.possible_directions:
+                self.direction = 'left'
+            self.rect.x += 2
+            self.rect.y += 2
+            if self.distance_to_player(min_distance_player) < min_distance and 'down' in self.possible_directions:
+                self.direction = 'down'
+            self.rect.y -= 2
+            self.rect.y -= 2
+            if self.distance_to_player(min_distance_player) < min_distance and 'up' in self.possible_directions:
+                self.direction = 'up'
+            self.rect.y += 2
 
     def change_direction(self):
         if not self.possible_directions:
             self.direction = 'up'
         elif time.perf_counter() - self.change_dir_time > 0.1 or (self.direction not in self.possible_directions):
-            if self.direction == 'right':
-                if 'left' in self.possible_directions:
-                    self.possible_directions.remove('left')
-            elif self.direction == 'left':
-                if 'right' in self.possible_directions:
-                    self.possible_directions.remove('right')
-            elif self.direction == 'up':
-                if 'down' in self.possible_directions:
-                    self.possible_directions.remove('down')
-            elif self.direction == 'down':
-                if 'up' in self.possible_directions:
-                    self.possible_directions.remove('up')
             self.direction = random.choice(self.possible_directions)
             self.change_dir_time = time.perf_counter()
 
     def distance_to_pacman_change_speed(self, *args):
         for player in args:
-            distance_to_player = math.sqrt((self.rect.center[0] - player.rect.center[0]) ** 2 + (self.rect.center[1] - player.rect.center[1]) ** 2)
+            distance_to_player = self.distance_to_player(player)
             if distance_to_player < 128:
                 self.difference_x *= 1.5
                 self.difference_y *= 1.5
