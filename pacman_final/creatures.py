@@ -147,8 +147,7 @@ class Enemies(AbstractCreatures):
 
     def update(self, *args):
         self.make_directions()
-        self.change_direction()
-        self.follow_packman(*args)
+        self.change_direction(*args)
         if self.rect.left > WIDTH:
             self.rect.right = 0
         elif self.rect.right < 0:
@@ -196,38 +195,40 @@ class Enemies(AbstractCreatures):
         elif self.direction == 'down' and 'up' in self.possible_directions:
             self.possible_directions.remove('up')
 
-    def follow_packman(self, *args):
-        min_distance = self.distance_to_player(args[0])
-        min_distance_player = args[0]
-        for player in args:
-            moment_distance = self.distance_to_player(player)
-            if self.distance_to_player(player) < min_distance:
-                min_distance = moment_distance
-                min_distance_player = player
-        if min_distance < 128:
-            self.rect.x += 2
-            if self.distance_to_player(min_distance_player) < min_distance and 'right' in self.possible_directions:
-                self.direction = 'right'
-            self.rect.x -= 2
-            self.rect.x -= 2
-            if self.distance_to_player(min_distance_player) < min_distance and 'left' in self.possible_directions:
-                self.direction = 'left'
-            self.rect.x += 2
-            self.rect.y += 2
-            if self.distance_to_player(min_distance_player) < min_distance and 'down' in self.possible_directions:
-                self.direction = 'down'
-            self.rect.y -= 2
-            self.rect.y -= 2
-            if self.distance_to_player(min_distance_player) < min_distance and 'up' in self.possible_directions:
-                self.direction = 'up'
-            self.rect.y += 2
+    def follow_packman(self, min_distance, min_distance_player):
+        self.rect.x += 2
+        if self.distance_to_player(min_distance_player) < min_distance and 'right' in self.possible_directions:
+            self.direction = 'right'
+        self.rect.x -= 2
+        self.rect.x -= 2
+        if self.distance_to_player(min_distance_player) < min_distance and 'left' in self.possible_directions:
+            self.direction = 'left'
+        self.rect.x += 2
+        self.rect.y += 2
+        if self.distance_to_player(min_distance_player) < min_distance and 'down' in self.possible_directions:
+            self.direction = 'down'
+        self.rect.y -= 2
+        self.rect.y -= 2
+        if self.distance_to_player(min_distance_player) < min_distance and 'up' in self.possible_directions:
+            self.direction = 'up'
+        self.rect.y += 2
 
-    def change_direction(self):
+    def change_direction(self, *args):
         if not self.possible_directions:
             self.direction = 'up'
         elif time.perf_counter() - self.change_dir_time > 0.1 or (self.direction not in self.possible_directions):
+            min_distance = self.distance_to_player(args[0])
+            min_distance_player = args[0]
+            for player in args:
+                moment_distance = self.distance_to_player(player)
+                if self.distance_to_player(player) < min_distance:
+                    min_distance = moment_distance
+                    min_distance_player = player
+            if len(self.possible_directions) != 1 or (len(self.possible_directions) == 1 and self.possible_directions[0] != self.direction):
+                self.change_dir_time = time.perf_counter()
             self.direction = random.choice(self.possible_directions)
-            self.change_dir_time = time.perf_counter()
+            if min_distance < 128:
+                self.follow_packman(min_distance, min_distance_player)
 
     def distance_to_pacman_change_speed(self, *args):
         for player in args:
