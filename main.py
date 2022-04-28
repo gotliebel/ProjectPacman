@@ -1,5 +1,5 @@
-from game import *
-from MeNu import *
+from src.game import *
+from src.menu import *
 
 WIDTH = 1080
 HEIGHT = 920
@@ -52,7 +52,7 @@ def main():
             game.events(events)
             game.draw_moment_frame()
     else:
-        game = GamePlaySecondLevel(screen, game_over)
+        game = GamePlayMultiplayer(screen, game_over)
         while not game.game_over:
             events = pygame.event.get()
             clock.tick(FPS)
@@ -63,6 +63,7 @@ def main():
             game.second_player.events_with_player(pygame.K_UP, pygame.K_LEFT, pygame.K_DOWN, pygame.K_RIGHT, game.win, events)
             game.draw_moment_frame()
     pygame.quit()
+
 
 if __name__ == '__main__':
     main()

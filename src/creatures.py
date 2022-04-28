@@ -1,7 +1,7 @@
 import time
 
-from animation import Animation
-from environment import *
+from src.animation import Animation
+from src.environment import *
 import random
 import math
 
@@ -20,21 +20,20 @@ class AbstractCreatures(pygame.sprite.Sprite):
 
 
 class Player(AbstractCreatures):
-    def __init__(self, x, y, image_filename):
+    def __init__(self, x, y, image_filename, heart_filename, lives):
         AbstractCreatures.__init__(self, image_filename)
         self.dead = False
-        self.lives = 0
+        self.hit_time = 0
+        self.lives = lives
+        self.heart = pygame.image.load(heart_filename).convert()
+        self.heart.set_colorkey((0, 0, 0))
         self.moment_image = pygame.image.load(image_filename).convert()
-        self.animation_dead = Animation(pygame.image.load("explosion.png"), 30, 30)
-        self.animation_rotate_image = pygame.image.load("walk.png")
-        self.animation_move_right = Animation(self.animation_rotate_image, 32,
-                                              32)
-        self.animation_move_left = Animation(
-            pygame.transform.rotate(self.animation_rotate_image, 180), 32, 32)
-        self.animation_move_up = Animation(
-            pygame.transform.rotate(self.animation_rotate_image, 90), 32, 32)
-        self.animation_move_down = Animation(
-            pygame.transform.rotate(self.animation_rotate_image, 270), 32, 32)
+        self.animation_dead = Animation(pygame.image.load("images/explosion.png"), 32, 32)
+        self.animation_rotate_image = pygame.image.load("images/walk.png")
+        self.animation_move_right = Animation(self.animation_rotate_image, 32, 32)
+        self.animation_move_left = Animation(pygame.transform.rotate(self.animation_rotate_image, 180), 32, 32)
+        self.animation_move_up = Animation(pygame.transform.rotate(self.animation_rotate_image, 90), 32, 32)
+        self.animation_move_down = Animation(pygame.transform.rotate(self.animation_rotate_image, 270), 32, 32)
         self.moment_image.set_colorkey((0, 0, 0))
         self.rect.center = (x, y)
         self.score = 0
@@ -92,8 +91,12 @@ class Player(AbstractCreatures):
             if self.animation_dead.moment_index == 10:
                 self.animation_dead.moment_index = 11
             if self.animation_dead.moment_index < 11:
-                self.animation_dead.update(30, 30)
+                self.animation_dead.update(32, 32)
             self.moment_image = self.animation_dead.moment_image
+
+    def draw_lives(self, screen, height):
+        for i in range(self.lives):
+            screen.blit(self.heart, self.heart.get_rect(center=(WIDTH // 2 - 30 + 30 * i, HEIGHT - height)))
 
     def move_right(self):
         self.moment_image = self.const_image
@@ -173,18 +176,23 @@ class Enemies(AbstractCreatures):
         self.rect.y += self.difference_y
 
     def distance_to_player(self, player):
-        return math.sqrt((self.rect.center[0] - player.rect.center[0]) ** 2 + (self.rect.center[1] - player.rect.center[1]) ** 2)
+        return math.sqrt(
+            (self.rect.center[0] - player.rect.center[0]) ** 2 + (self.rect.center[1] - player.rect.center[1]) ** 2)
 
     def make_directions(self):
         self.possible_directions = ['right', 'left', 'up', 'down']
-        for block in environment_blocks:
-            if (block.check_point((self.rect.topright[0] + 7, self.rect.topright[1])) or block.check_point((self.rect.bottomright[0] + 7, self.rect.bottomright[1]))) and 'right' in self.possible_directions:
+        for block in env.group_blocks:
+            if (block.check_point((self.rect.topright[0] + 7, self.rect.topright[1])) or block.check_point(
+                    (self.rect.bottomright[0] + 7, self.rect.bottomright[1]))) and 'right' in self.possible_directions:
                 self.possible_directions.remove('right')
-            if (block.check_point((self.rect.topleft[0] - 7, self.rect.topleft[1])) or block.check_point((self.rect.bottomleft[0] - 7, self.rect.bottomleft[1]))) and 'left' in self.possible_directions:
+            if (block.check_point((self.rect.topleft[0] - 7, self.rect.topleft[1])) or block.check_point(
+                    (self.rect.bottomleft[0] - 7, self.rect.bottomleft[1]))) and 'left' in self.possible_directions:
                 self.possible_directions.remove('left')
-            if (block.check_point((self.rect.topleft[0], self.rect.topleft[1] - 7)) or block.check_point((self.rect.topright[0], self.rect.topright[1] - 7))) and 'up' in self.possible_directions:
+            if (block.check_point((self.rect.topleft[0], self.rect.topleft[1] - 7)) or block.check_point(
+                    (self.rect.topright[0], self.rect.topright[1] - 7))) and 'up' in self.possible_directions:
                 self.possible_directions.remove('up')
-            if (block.check_point((self.rect.bottomleft[0], self.rect.bottomleft[1] + 7)) or block.check_point((self.rect.bottomright[0], self.rect.bottomright[1] + 7))) and 'down' in self.possible_directions:
+            if (block.check_point((self.rect.bottomleft[0], self.rect.bottomleft[1] + 7)) or block.check_point(
+                    (self.rect.bottomright[0], self.rect.bottomright[1] + 7))) and 'down' in self.possible_directions:
                 self.possible_directions.remove('down')
         if self.direction == 'right' and 'left' in self.possible_directions:
             self.possible_directions.remove('left')
@@ -224,7 +232,8 @@ class Enemies(AbstractCreatures):
                 if self.distance_to_player(player) < min_distance:
                     min_distance = moment_distance
                     min_distance_player = player
-            if len(self.possible_directions) != 1 or (len(self.possible_directions) == 1 and self.possible_directions[0] != self.direction):
+            if len(self.possible_directions) != 1 or (
+                    len(self.possible_directions) == 1 and self.possible_directions[0] != self.direction):
                 self.change_dir_time = time.perf_counter()
             self.direction = random.choice(self.possible_directions)
             if min_distance < 128:
@@ -254,20 +263,3 @@ class Enemies(AbstractCreatures):
     def move_down(self):
         self.difference_x = 0
         self.difference_y = 2
-
-
-class PlayerWithLives(Player):
-    def __init__(self, x, y, image_filename, heart_filename):
-        Player.__init__(self, x, y, image_filename)
-        self.hit_time = 0
-        self.lives = 3
-        self.heart = pygame.image.load(heart_filename).convert()
-        self.heart.set_colorkey((0, 0, 0))
-
-    def draw_lives(self, screen, height):
-        for i in range(self.lives):
-            screen.blit(self.heart, self.heart.get_rect(center=(WIDTH // 2 - 30 + 30 * i, HEIGHT - height)))
-
-
-
-
