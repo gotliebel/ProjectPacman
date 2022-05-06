@@ -1,8 +1,5 @@
 import pygame
 
-WIDTH = 1080
-HEIGHT = 920
-
 
 class Animation(object):
     def __init__(self, img, width, height):

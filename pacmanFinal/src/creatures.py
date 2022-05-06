@@ -1,12 +1,10 @@
 import time
-
+import pygame
 from src.animation import Animation
-from src.environment import *
+from src.environment import env
 import random
 import math
-
-WIDTH = 1080
-HEIGHT = 920
+import src.settings as settings
 
 
 class AbstractCreatures(pygame.sprite.Sprite):
@@ -65,13 +63,13 @@ class Player(AbstractCreatures):
 
     def update(self):
         if not self.dead:
-            if self.rect.left > WIDTH:
+            if self.rect.left > int(settings.WIDTH):
                 self.rect.right = 0
             elif self.rect.right < 0:
-                self.rect.left = WIDTH
+                self.rect.left = int(settings.WIDTH)
             elif self.rect.bottom < 0:
-                self.rect.top = HEIGHT
-            elif self.rect.top > HEIGHT:
+                self.rect.top = int(settings.HEIGHT)
+            elif self.rect.top > int(settings.HEIGHT):
                 self.rect.bottom = 0
             if self.difference_x > 0:
                 self.animation_move_right.update(32, 32)
@@ -94,9 +92,10 @@ class Player(AbstractCreatures):
                 self.animation_dead.update(32, 32)
             self.moment_image = self.animation_dead.moment_image
 
-    def draw_lives(self, screen, height):
+    def draw_lives(self, screen, width):
         for i in range(self.lives):
-            screen.blit(self.heart, self.heart.get_rect(center=(WIDTH // 2 - 30 + 30 * i, HEIGHT - height)))
+            screen.blit(self.heart,
+                        self.heart.get_rect(center=(settings.WIDTH // 2 - width - 30 + 30 * i, settings.HEIGHT - 39)))
 
     def move_right(self):
         self.moment_image = self.const_image
@@ -151,13 +150,13 @@ class Enemies(AbstractCreatures):
     def update(self, *args):
         self.make_directions()
         self.change_direction(*args)
-        if self.rect.left > WIDTH:
+        if self.rect.left > settings.WIDTH:
             self.rect.right = 0
         elif self.rect.right < 0:
-            self.rect.left = WIDTH
+            self.rect.left = settings.WIDTH
         elif self.rect.bottom < 0:
-            self.rect.top = HEIGHT
-        elif self.rect.top > HEIGHT:
+            self.rect.top = settings.HEIGHT
+        elif self.rect.top > settings.HEIGHT:
             self.rect.bottom = 0
         if not self.end_game:
             if self.direction == 'right':
@@ -236,13 +235,13 @@ class Enemies(AbstractCreatures):
                     len(self.possible_directions) == 1 and self.possible_directions[0] != self.direction):
                 self.change_dir_time = time.perf_counter()
             self.direction = random.choice(self.possible_directions)
-            if min_distance < 128:
+            if min_distance < 96:
                 self.follow_packman(min_distance, min_distance_player)
 
     def distance_to_pacman_change_speed(self, *args):
         for player in args:
             distance_to_player = self.distance_to_player(player)
-            if distance_to_player < 128:
+            if distance_to_player < 96:
                 self.difference_x *= 1.5
                 self.difference_y *= 1.5
 
